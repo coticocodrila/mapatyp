@@ -213,13 +213,19 @@
     // Envolvemos el contenido en un div con scroll propio, para poder resetear su posición
     var contenidoPopup = '<div class="popup-scroll">' + local.html + '</div>';
 
-    var popup = new maplibregl.Popup({ offset: 30, maxWidth: '300px' })
+    var popup = new maplibregl.Popup({ offset: 30, maxWidth: '300px', closeOnClick: true })
       .setHTML(contenidoPopup);
 
     // Cada vez que el popup se abre, forzamos el scroll interno a la parte superior
+    // (usamos el elemento propio de ESTE popup, no una búsqueda global, para que sea siempre preciso)
     popup.on('open', function() {
-      var scrollDiv = document.querySelector('.popup-scroll');
-      if (scrollDiv) scrollDiv.scrollTop = 0;
+      setTimeout(function() {
+        var elPopup = popup.getElement();
+        if (elPopup) {
+          var scrollDiv = elPopup.querySelector('.popup-scroll');
+          if (scrollDiv) scrollDiv.scrollTop = 0;
+        }
+      }, 0);
     });
 
     new maplibregl.Marker({ element: el, anchor: 'bottom' })
