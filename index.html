@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tapas y Copas v04</title>
+<title>Mapa Tapas y Copas - Cerro Alegre y Cerro Concepción</title>
 <link rel="preconnect" href="https://tiles.openfreemap.org">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
@@ -126,6 +126,9 @@
     overflow-x: hidden;
     flex: 1 1 auto;
     min-height: 0; /* imprescindible para que el scroll interno funcione dentro de flexbox */
+    -webkit-overflow-scrolling: touch; /* scroll con inercia en iOS */
+    touch-action: pan-y; /* le dice explícitamente al navegador: este elemento se desplaza verticalmente */
+    overscroll-behavior: contain; /* evita que el "rebote" del scroll se filtre hacia el mapa de fondo */
   }
   .popup-body { padding: 16px 20px 4px 20px; }
   .popup-section { margin-bottom: 16px; }
