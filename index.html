@@ -172,7 +172,7 @@
 
   function limpiarEstilo() {
     var estilo = map.getStyle();
-    var palabrasClaveMantener = ['road', 'highway', 'street', 'transportation', 'bridge', 'tunnel', 'path', 'ferry'];
+    var palabrasClaveMantener = ['road', 'highway', 'street', 'transportation', 'bridge', 'tunnel', 'path', 'ferry', 'pedestrian', 'service', 'residential', 'track', 'cycle', 'steps', 'trail', 'walkway', 'lane', 'motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor', 'major'];
 
     var capasFiltradas = estilo.layers.filter(function(capa) {
       var id = capa.id.toLowerCase();
@@ -184,11 +184,16 @@
       return false;
     });
 
-    // Pintamos el fondo de gris, sin tocar el color de las calles
+    // Pintamos el fondo Y el agua de gris (tonos distintos para diferenciar),
+    // sin tocar el color de las calles
     capasFiltradas.forEach(function(capa) {
       if (capa.type === 'background') {
         capa.paint = capa.paint || {};
         capa.paint['background-color'] = '#e3e3e3';
+      }
+      if (capa.id.toLowerCase().indexOf('water') !== -1 && capa.type === 'fill') {
+        capa.paint = capa.paint || {};
+        capa.paint['fill-color'] = '#cfcfcf';
       }
     });
 
@@ -214,6 +219,7 @@
     '</svg>';
 
   var popupActual = null;
+  var moviendoPorCodigo = false;
 
   function cerrarPopupActual() {
     if (popupActual) {
@@ -222,9 +228,15 @@
     }
   }
 
-  // Si el usuario arrastra el mapa (con mouse o dedo), cerramos el popup abierto
-  // en vez de dejar que "viaje" pegado al mapa
-  map.on('dragstart', cerrarPopupActual);
+  // Cerramos el popup ante CUALQUIER movimiento iniciado por el usuario
+  // (arrastrar, hacer zoom con los dedos, rueda del mouse, teclado, etc.)
+  // pero NO cuando el movimiento lo genera nuestro propio código (el centrado
+  // automático al abrir un pin), gracias a la bandera "moviendoPorCodigo".
+  map.on('movestart', function() {
+    if (!moviendoPorCodigo) {
+      cerrarPopupActual();
+    }
+  });
 
   locales.forEach(function(local) {
     var el = document.createElement('div');
@@ -249,9 +261,8 @@
     el.addEventListener('click', function(ev) {
       ev.stopPropagation();
       cerrarPopupActual();
-      // Centramos el mapa dejando más espacio arriba (donde aparece el popup)
-      // que abajo, usando "padding" para que el pin quede en la mitad inferior
-      // de la pantalla y el popup completo quepa por encima sin cortarse.
+
+      moviendoPorCodigo = true;
       map.flyTo({
         center: [local.lon, local.lat],
         zoom: Math.max(map.getZoom(), 17),
@@ -259,6 +270,10 @@
         curve: 1,
         padding: { top: 260, bottom: 40, left: 20, right: 20 }
       });
+      map.once('moveend', function() {
+        moviendoPorCodigo = false;
+      });
+
       popup.setLngLat([local.lon, local.lat]);
       popup.addTo(map);
     });
