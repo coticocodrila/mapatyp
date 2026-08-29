@@ -33,26 +33,29 @@
     cursor: pointer;
   }
   .marcador-etiqueta {
-    background: #fff;
-    color: #1f5c50;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 6px;
+    background: rgba(255,255,255,0.92);
+    color: #2f2f2f;
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    padding: 2px 7px;
+    border-radius: 5px;
     white-space: nowrap;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-    margin-bottom: 3px;
-    max-width: 140px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    margin-bottom: 2px;
+    max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .marcador-pin { width: 26px; height: 34px; }
 
   /* ===== Modal centrado (independiente del mapa) ===== */
+  /* El "backdrop" ya NO cubre ni bloquea el mapa: solo sirve como contenedor
+     posicionador. pointer-events:none dejar pasar los clics al mapa; la tarjeta
+     en sí (#modal-card) sí captura sus propios clics. */
   #modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,23 +67,24 @@
   }
   #modal-backdrop.activo {
     opacity: 1;
-    pointer-events: all;
   }
   #modal-card {
     background: #fff;
     border-radius: 14px;
     width: 100%;
     max-width: 320px;
-    max-height: 80vh;
+    max-height: 70vh;
     overflow: hidden;
     box-shadow: 0 12px 40px rgba(0,0,0,0.3);
     transform: translateY(12px);
     transition: transform 0.2s ease;
     display: flex;
     flex-direction: column;
+    pointer-events: none;
   }
   #modal-backdrop.activo #modal-card {
     transform: translateY(0);
+    pointer-events: all;
   }
 
   .popup-header {
@@ -110,6 +114,8 @@
   .popup-scroll {
     overflow-y: auto;
     overflow-x: hidden;
+    flex: 1 1 auto;
+    min-height: 0; /* imprescindible para que el scroll interno funcione dentro de flexbox */
   }
   .popup-body { padding: 16px 20px 4px 20px; }
   .popup-section { margin-bottom: 16px; }
@@ -190,6 +196,27 @@
       }
     });
 
+    // Reemplazamos cualquier color (incluido el amarillo típico de calles
+    // secundarias) por una paleta de grises, según la importancia de la vía
+    capasFiltradas.forEach(function(capa) {
+      if (capa.type === 'line') {
+        capa.paint = capa.paint || {};
+        var id = capa.id.toLowerCase();
+        if (id.indexOf('motorway') !== -1 || id.indexOf('trunk') !== -1) {
+          capa.paint['line-color'] = '#707070';
+        } else if (id.indexOf('primary') !== -1) {
+          capa.paint['line-color'] = '#8a8a8a';
+        } else {
+          capa.paint['line-color'] = '#aeaeae';
+        }
+      }
+      if (capa.type === 'symbol' && capa.paint && capa.paint['text-color']) {
+        capa.paint['text-color'] = '#4a4a4a';
+        capa.paint['text-halo-color'] = '#ffffff';
+        capa.paint['text-halo-width'] = 1.2;
+      }
+    });
+
     estilo.layers = capasFiltradas;
     map.setStyle(estilo);
   }
@@ -206,26 +233,46 @@
     document.getElementById('loader').style.display = 'none';
   }, 6000);
 
-  // ===== Modal fijo en pantalla (independiente del mapa: no se arrastra, no se corta) =====
+  // ===== Tarjeta fija en pantalla, con el mapa siempre interactivo detrás =====
   var modalBackdrop = document.getElementById('modal-backdrop');
   var modalContent = document.getElementById('modal-content');
+  var popupAbierto = false;
 
   function abrirPopup(htmlContenido) {
     modalContent.innerHTML = htmlContenido;
     modalBackdrop.classList.add('activo');
-    var scrollDiv = modalContent.querySelector('.popup-scroll');
-    if (scrollDiv) scrollDiv.scrollTop = 0;
+    popupAbierto = true;
+    // Esperamos un frame a que el navegador termine de dibujar el contenido
+    // nuevo antes de resetear el scroll — así el "inicio desde arriba" es 100% confiable
+    requestAnimationFrame(function() {
+      var scrollDiv = modalContent.querySelector('.popup-scroll');
+      if (scrollDiv) scrollDiv.scrollTop = 0;
+    });
   }
 
   function cerrarPopup() {
     modalBackdrop.classList.remove('activo');
+    popupAbierto = false;
   }
 
-  // Cierra SOLO al hacer clic en el fondo oscuro (fuera de la tarjeta), nunca por mover el mapa
-  modalBackdrop.addEventListener('click', function(e) {
-    if (e.target === modalBackdrop) {
+  // 1) Cerrar al tocar fuera de la tarjeta (en cualquier parte, incluido el mapa)
+  document.addEventListener('click', function(e) {
+    if (!popupAbierto) return;
+    var card = document.getElementById('modal-card');
+    var esUnPin = e.target.closest ? e.target.closest('.marcador-wrap') : null;
+    if (!card.contains(e.target) && !esUnPin) {
       cerrarPopup();
     }
+  });
+
+  // 2) Cerrar al arrastrar o hacer zoom en el mapa (el mapa queda libre para navegar)
+  map.on('dragstart', function() {
+    if (popupAbierto) cerrarPopup();
+  });
+  map.on('zoomstart', function(e) {
+    // Ignoramos el zoom que a veces dispara el propio navegador al abrir/cerrar
+    // teclado en inputs; solo nos importa el zoom manual del usuario (pellizco/rueda)
+    if (popupAbierto && e.originalEvent) cerrarPopup();
   });
 
   var svgPin = '<svg class="marcador-pin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 34" width="26" height="34">' +
