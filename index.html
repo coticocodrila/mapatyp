@@ -8,144 +8,133 @@
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
   html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
+    margin: 0; padding: 0; height: 100%; width: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
-  #mapa {
-    width: 100%;
-    height: 100vh;
-    background: #f0f0f0;
-  }
+  #mapa { width: 100%; height: 100vh; background: #e3e3e3; }
+
   #loader {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 10px;
-    background: #f0f0f0;
-    z-index: 9999;
-    color: #666;
-    transition: opacity 0.3s ease;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px; background: #e3e3e3; z-index: 9999;
+    color: #666; transition: opacity 0.3s ease;
   }
   .spinner {
-    width: 36px;
-    height: 36px;
-    border: 4px solid #ccc;
-    border-top-color: #2a7a6b;
-    border-radius: 50%;
-    animation: girar 0.8s linear infinite;
+    width: 36px; height: 36px; border: 4px solid #ccc; border-top-color: #2a7a6b;
+    border-radius: 50%; animation: girar 0.8s linear infinite;
   }
   @keyframes girar { to { transform: rotate(360deg); } }
 
-  /* ===== Popup ===== */
-  .maplibregl-popup {
-    max-width: 300px !important;
+  /* ===== Marcador con etiqueta visible tipo uMap ===== */
+  .marcador-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
   }
-  .maplibregl-popup-content {
-    padding: 0;
-    border-radius: 14px;
+  .marcador-etiqueta {
+    background: #fff;
+    color: #1f5c50;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    margin-bottom: 3px;
+    max-width: 140px;
     overflow: hidden;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    text-overflow: ellipsis;
   }
-  .maplibregl-popup-close-button {
-    font-size: 20px;
+  .marcador-pin { width: 26px; height: 34px; }
+
+  /* ===== Modal centrado (independiente del mapa) ===== */
+  #modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  #modal-backdrop.activo {
+    opacity: 1;
+    pointer-events: all;
+  }
+  #modal-card {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 320px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    transform: translateY(12px);
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  #modal-backdrop.activo #modal-card {
+    transform: translateY(0);
+  }
+
+  .popup-header {
+    background: #2a7a6b;
+    padding: 16px 44px 16px 20px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .popup-header h3 {
+    margin: 0; color: #fff; font-size: 17px; font-weight: 600;
+    line-height: 1.3; word-break: break-word;
+  }
+  .popup-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    width: 30px; height: 30px;
+    border: none;
+    background: rgba(255,255,255,0.2);
     color: #fff;
-    right: 6px;
-    top: 4px;
-    z-index: 2;
+    font-size: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    line-height: 1;
   }
+  .popup-close:hover { background: rgba(255,255,255,0.35); }
+
   .popup-scroll {
-    max-height: 320px;
     overflow-y: auto;
     overflow-x: hidden;
   }
-  .popup-header {
-    background: #2a7a6b;
-    padding: 16px 20px;
-  }
-  .popup-header h3 {
-    margin: 0;
-    color: #fff;
-    font-size: 17px;
-    font-weight: 600;
-    line-height: 1.3;
-    padding-right: 18px;
-    word-break: break-word;
-  }
-  .popup-body {
-    padding: 16px 20px 4px 20px;
-  }
-  .popup-section {
-    margin-bottom: 16px;
-  }
+  .popup-body { padding: 16px 20px 4px 20px; }
+  .popup-section { margin-bottom: 16px; }
   .popup-label {
-    font-size: 12.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #2a7a6b;
-    margin-bottom: 6px;
+    font-size: 12.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: #2a7a6b; margin-bottom: 6px;
   }
-  .popup-section ul {
-    margin: 0;
-    padding-left: 20px;
-    list-style: disc;
-  }
-  .popup-section li {
-    font-size: 14px;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 3px;
-    word-wrap: break-word;
-  }
+  .popup-section ul { margin: 0; padding-left: 20px; list-style: disc; }
+  .popup-section li { font-size: 14px; line-height: 1.5; color: #333; margin-bottom: 3px; word-wrap: break-word; }
   .popup-direccion {
-    font-size: 13px;
-    color: #666;
-    line-height: 1.5;
-    padding: 10px 0 16px 0;
-    border-top: 1px solid #eee;
-    word-wrap: break-word;
+    font-size: 13px; color: #666; line-height: 1.5; padding: 10px 0 16px 0;
+    border-top: 1px solid #eee; word-wrap: break-word;
   }
   .popup-actions {
-    display: flex;
-    gap: 8px;
-    padding: 12px 20px 18px 20px;
+    display: flex; gap: 8px; padding: 12px 20px 18px 20px; flex-shrink: 0;
   }
   .popup-btn {
-    flex: 1;
-    text-align: center;
-    padding: 10px 8px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: 1; text-align: center; padding: 10px 8px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     transition: opacity 0.15s ease;
   }
   .popup-btn:hover { opacity: 0.85; }
-  .popup-btn-primary {
-    background: #2a7a6b;
-    color: #fff;
-  }
-  .popup-btn-outline {
-    background: #fff;
-    color: #2a7a6b;
-    border: 1.5px solid #2a7a6b;
-  }
-
-  .marcador-custom {
-    width: 26px;
-    height: 26px;
-    cursor: pointer;
-  }
+  .popup-btn-primary { background: #2a7a6b; color: #fff; }
+  .popup-btn-outline { background: #fff; color: #2a7a6b; border: 1.5px solid #2a7a6b; }
 </style>
 </head>
 <body>
@@ -156,9 +145,15 @@
 </div>
 <div id="mapa"></div>
 
+<div id="modal-backdrop">
+  <div id="modal-card">
+    <div id="modal-content"></div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>
-  var locales = [{"lat": -33.04306038672265, "lon": -71.6276925210457, "name": "3841 Coffee Roasters", "html": "<div class=\"popup-header\"><h3>3841 Coffee Roasters</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Danesa Salada</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Nitro ColdBrew</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 385, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/vhbVFasGZ69sPJVR9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"3841_cl\" href=\"https://www.instagram.com/3841_cl\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04185268416895, "lon": -71.62902452566176, "name": "Aida's Pizzería", "html": "<div class=\"popup-header\"><h3>Aida's Pizzería</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Urriola 518, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/puJxSEekvB9Lz2tt8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"aidas.pizzeria\" href=\"https://www.instagram.com/aidas.pizzeria\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043181883785024, "lon": -71.6280507683518, "name": "Alma Mía", "html": "<div class=\"popup-header\"><h3>Alma Mía</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 402, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/atLz5AkEepW7Kmqg8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"almamiavalparaiso\" href=\"https://www.instagram.com/almamiavalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043463031411086, "lon": -71.62818674785528, "name": "Bar De Pisco", "html": "<div class=\"popup-header\"><h3>Bar De Pisco</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 454, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/TiL34KXiaNfC6vxy8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"bardepisco\" href=\"https://www.instagram.com/bardepisco\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.040958234243554, "lon": -71.62721531465237, "name": "Bar Lemutt (Lemutt)", "html": "<div class=\"popup-header\"><h3>Bar Lemutt (Lemutt)</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Waffle de papa camote con cremoso de setas, huevo de codorniz trufado y coronado con trufas negra de invierno de Futrono y queso Grana Padano</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>El Tomy*: Syrup de piña, extracto de jengibre, jalapeño, gin, soda</li><li>El Kiwi*: Negroni sour. Gin, Campari, vermú de la casa, syrup simple y limón</li></ul></div><div class=\"popup-direccion\">📍 Galvez 233, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/Q3JRq5EZ6rXEdUt46\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"barlemutt\" href=\"https://www.instagram.com/barlemutt\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.041085, "lon": -71.627657, "name": "Café Paraíso", "html": "<div class=\"popup-header\"><h3>Café Paraíso</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Pasaje Gálvez 173, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/Bi2P6ukefHHvVwLF7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"cafeparaiso3.0\" href=\"https://www.instagram.com/cafeparaiso3.0\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04357860271372, "lon": -71.62759594907078, "name": "Casa Alegre", "html": "<div class=\"popup-header\"><h3>Casa Alegre</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 249, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/pmygPygLnkbkX2D68\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"casalegrevalparaiso\" href=\"https://www.instagram.com/casalegrevalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.040678, "lon": -71.628231, "name": "Circular", "html": "<div class=\"popup-header\"><h3>Circular</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Yugoslavo 15, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/QD4jD6yEaqDq9VKv9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"circularvalparaiso\" href=\"https://www.instagram.com/circularvalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04360889204157, "lon": -71.62811651214766, "name": "Cocina Puerto", "html": "<div class=\"popup-header\"><h3>Cocina Puerto</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 455, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/UQUZM71h17bU2YqCA\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"cocinapuerto_valpo\" href=\"https://www.instagram.com/cocinapuerto_valpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042526, "lon": -71.628054, "name": "Corazón Continto", "html": "<div class=\"popup-header\"><h3>Corazón Continto</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Ostion yakitori, espuma de queso mantecoso, merkén y tierra de maní</li><li>Mini pincho de albacora</li><li>Tártaro de betarraga (veg)</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Pisco transparente, piña, sauvignon blanc, té negro con romero y syrup simple</li><li>Wine sour con syrup de jengibre</li><li>Copa de vino</li><li>Mocktail*: Shrub con fruta de estación y agua mineral</li></ul></div><div class=\"popup-direccion\">📍 Templeman 561, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/9wUN42o3xMv4B7nj7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"corazoncontinto.cl\" href=\"https://www.instagram.com/corazoncontinto.cl\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04229602421333, "lon": -71.62782327207962, "name": "Don César", "html": "<div class=\"popup-header\"><h3>Don César</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Trozos de lomo liso a la parrilla con berenjena en escabeche sobre pan tostado</li><li>Trozos de chorizo de cerdo con salsa de pimentón asado sobre pan tostado</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Copa de vino carmenere</li><li>Sangría</li><li>Jugo natural de frutas</li></ul></div><div class=\"popup-direccion\">📍 Templeman 484, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/cwzcp2aYna9qAuFR8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"parrilla.doncesar\" href=\"https://www.instagram.com/parrilla.doncesar\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0433768, "lon": -71.6281453, "name": "Espacio Raíz (Raíz Chilena)", "html": "<div class=\"popup-header\"><h3>Espacio Raíz (Raíz Chilena)</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Profiterol Raíz*: Profiterol salado relleno de pastelera de choclo y carne desmechada, acompañado de lactonesa de pebre</li><li>Tostada Marina*: Tostada de pan amasado con crema de parmesano y corvina ahumada, acompañada de emulsión de camarón y un toque de cilantro</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Chirimoya Alegre*: Cóctel de autor, frutal y refrescante a base de pisco, Chardonnay, naranja y chirimoya, con notas cítricas y espíritu de verano</li><li>Vino Navegado*: Clásico chileno cálido y aromático a base de vino tinto, naranja y especias, con notas cítricas y especiadas que evocan una de las preparaciones más tradicionales de nuestra cultura</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 438, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/QYHYPUFw4A6BsX7c9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"espacioraizvalpo\" href=\"https://www.instagram.com/espacioraizvalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04282778295973, "lon": -71.6295811873079, "name": "Fat Kid", "html": "<div class=\"popup-header\"><h3>Fat Kid</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Arancini Black Gold Baby*: Bola de risotto de champiñones apanada y frita, decorada con cebolla caramelizada y mayonesa trufada</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Despertar en Las Torpederas*: Vino Chardonnay, vodka de pera, syrup de canela y albúmina</li></ul></div><div class=\"popup-direccion\">📍 Lautaro Rosas 450, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/dyttRfHkYfBUhQPj8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"fatkidburgers\" href=\"https://www.instagram.com/fatkidburgers\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043770574925276, "lon": -71.62694097235091, "name": "Fauna", "html": "<div class=\"popup-header\"><h3>Fauna</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 166, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/D24qUKQB566eQn7G6\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"faunahotelrestaurante\" href=\"https://www.instagram.com/faunahotelrestaurante\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04348360856028, "lon": -71.62736358231606, "name": "Hotzenplotz Alegre", "html": "<div class=\"popup-header\"><h3>Hotzenplotz Alegre</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Mini choripán alemán</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Cerveza artesanal 300 cc</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 217, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/EnszhcNwMXky9zDC8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"hotzenplotz_alegre\" href=\"https://www.instagram.com/hotzenplotz_alegre\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04119789725527, "lon": -71.6271514980393, "name": "Il Paparazzo", "html": "<div class=\"popup-header\"><h3>Il Paparazzo</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Papudo 424</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/Kkye3zvaRHhsWdko7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"ilpaparazzovalparaiso\" href=\"https://www.instagram.com/ilpaparazzovalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04278, "lon": -71.627245, "name": "Jardín Cervecero", "html": "<div class=\"popup-header\"><h3>Jardín Cervecero</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Veggie*: berenjena furay, hummus, palta y berenjena encurtida</li><li>Mar*: tiradito pulpo, salsa ají amarillo, aceite de cilantro, papa camote hilo</li><li>Carne*: ají verde apanado, relleno pino y queso crema, serrano deshidratado, tomate cilantro</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Copa de vino blanco, tinto, Sour Club Social (pisco macerado en cacho e' cabra) y cerveza lager 330 ml</li></ul></div><div class=\"popup-direccion\">📍 Concepción 499, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/BxX2pAk2hftXNnbJ9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"jardincervecero_cl\" href=\"https://www.instagram.com/jardincervecero_cl\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.041899635336726, "lon": -71.62640244667071, "name": "Kapura", "html": "<div class=\"popup-header\"><h3>Kapura</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Tropical*: Base de patacón de plátano verde con ceviche de atún fresco, frutas de estación (mango, piña y pera), toque de aceite de sésamo, ciboulette y quinoa frita</li><li>Tartar de res*: Baguette tostado con tartar de res, alcaparras, pepinillo, cebolla, alioli de ajo y aceite de cacho de cabra y un toque de pepino encurtido de la casa</li><li>Vegana*: Base de babaganoush coronada con un arancini de arroz arborio, setas y gel de cebolla caramelizada</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Valpo mule con y sin alcohol</li><li>Sangría fresca o sangría caprina</li></ul></div><div class=\"popup-direccion\">📍 Papudo 557, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/NYGmJqQ2FXqsquMt9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"kapura_valparaiso\" href=\"https://www.instagram.com/kapura_valparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.040462, "lon": -71.628204, "name": "La Colombina", "html": "<div class=\"popup-header\"><h3>La Colombina</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Pasaje Apolo 91, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/LF8C7QUgbsnqnisv9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"lacolombina_cerroalegre\" href=\"https://www.instagram.com/lacolombina_cerroalegre\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04296181966402, "lon": -71.62789567858829, "name": "La Conquistada", "html": "<div class=\"popup-header\"><h3>La Conquistada</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 382, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/1mh5JeCyrZtH5Xc8A\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"laconquistada_valparaiso\" href=\"https://www.instagram.com/laconquistada_valparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0437, "lon": -71.62881, "name": "Malizioso", "html": "<div class=\"popup-header\"><h3>Malizioso</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Bruschetta Harris*: Focaccia de la casa con arrollado artesanal Harris, pebre tradicional chileno y mousse de palta</li><li>Bruschetta Vegetariana*: Focaccia de la casa con hummus de betarraga, champiñones asados y fino chiffonade de piel de limón</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Pisco nacional transparente, licor de hibisco, infusión de rosa con frutos rojos y jugo de pomelo</li><li>Limonada de albahaca, jengibre, sirope de sauco y top de agua tónica</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 532, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/ymVYmJC9Rm7z75ZM8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"malizioso.pizzeria\" href=\"https://www.instagram.com/malizioso.pizzeria\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042615949598584, "lon": -71.62690767065276, "name": "María María La Fábrica", "html": "<div class=\"popup-header\"><h3>María María La Fábrica</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Concepción 499, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/uccU1CZJHerbSJHT8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"mariamaria.lafabrica\" href=\"https://www.instagram.com/mariamaria.lafabrica\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042493, "lon": -71.626946, "name": "Media Luna", "html": "<div class=\"popup-header\"><h3>Media Luna</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Pilcomayo 581, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/LkDVdenbLhpPZtD77\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"medialunavalpo\" href=\"https://www.instagram.com/medialunavalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043434131368315, "lon": -71.62791194800599, "name": "Momo", "html": "<div class=\"popup-header\"><h3>Momo</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 427, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/b3KJb44r5MDYh7Sc8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"momovalparaiso\" href=\"https://www.instagram.com/momovalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042675, "lon": -71.62645, "name": "Piano Café", "html": "<div class=\"popup-header\"><h3>Piano Café</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Abtao 668, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/tbitRs13Q3xRkUQe7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"piano.cafe.valpo\" href=\"https://www.instagram.com/piano.cafe.valpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042576, "lon": -71.626568, "name": "Planta Baja", "html": "<div class=\"popup-header\"><h3>Planta Baja</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Abtao 644, Cerro Concepción</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/qn6Lhbjbjjfj96xy5\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"plantabaja_valpo\" href=\"https://www.instagram.com/plantabaja_valpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042082345729284, "lon": -71.62724141025826, "name": "Quinto Rumbo", "html": "<div class=\"popup-header\"><h3>Quinto Rumbo</h3></div><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Ssam de pollo frito, lechuga, hojas de cilantro, menta fresca y chimichurri, sweet chili de merkén y rabanitos encurtidos</li><li>Opción vegan con berenjena frita</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Shrub spritz*: Macerado fermentado de piña albahaca o de mango ají verde y espumante brut</li><li>Mocktail*: Macerado fermentado de piña albahaca o de mango ají verde y soda</li></ul></div><div class=\"popup-direccion\">📍 Pilcomayo 529</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/9o77QR4Pc13MjG4T7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"quintorumbo.cocinaybar\" href=\"https://www.instagram.com/quintorumbo.cocinaybar\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0438392, "lon": -71.626887, "name": "Terapia", "html": "<div class=\"popup-header\"><h3>Terapia</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 135, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/7yK1hdABpLiAKpsZ8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"terapiavalpo\" href=\"https://www.instagram.com/terapiavalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04348, "lon": -71.6276535, "name": "Terrat", "html": "<div class=\"popup-header\"><h3>Terrat</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 263, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/DLkb6vWFbSx4Y2nV8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"terratvalpo\" href=\"https://www.instagram.com/terratvalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0403736, "lon": -71.6290517, "name": "Terruá Bistró", "html": "<div class=\"popup-header\"><h3>Terruá Bistró</h3></div><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Yugoslavo 115, Cerro Alegre</div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/YGLdv1CER2UYXK5H8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"terruabistro\" href=\"https://www.instagram.com/terruabistro\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}];
+  var locales = [{"lat": -33.04306038672265, "lon": -71.6276925210457, "name": "3841 Coffee Roasters", "html": "<div class=\"popup-header\"><h3>3841 Coffee Roasters</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Danesa Salada</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Nitro ColdBrew</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 385, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/vhbVFasGZ69sPJVR9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"3841_cl\" href=\"https://www.instagram.com/3841_cl\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04185268416895, "lon": -71.62902452566176, "name": "Aida's Pizzería", "html": "<div class=\"popup-header\"><h3>Aida's Pizzería</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Urriola 518, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/puJxSEekvB9Lz2tt8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"aidas.pizzeria\" href=\"https://www.instagram.com/aidas.pizzeria\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043181883785024, "lon": -71.6280507683518, "name": "Alma Mía", "html": "<div class=\"popup-header\"><h3>Alma Mía</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 402, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/atLz5AkEepW7Kmqg8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"almamiavalparaiso\" href=\"https://www.instagram.com/almamiavalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043463031411086, "lon": -71.62818674785528, "name": "Bar De Pisco", "html": "<div class=\"popup-header\"><h3>Bar De Pisco</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 454, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/TiL34KXiaNfC6vxy8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"bardepisco\" href=\"https://www.instagram.com/bardepisco\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.040958234243554, "lon": -71.62721531465237, "name": "Bar Lemutt (Lemutt)", "html": "<div class=\"popup-header\"><h3>Bar Lemutt (Lemutt)</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Waffle de papa camote con cremoso de setas, huevo de codorniz trufado y coronado con trufas negra de invierno de Futrono y queso Grana Padano</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>El Tomy*: Syrup de piña, extracto de jengibre, jalapeño, gin, soda</li><li>El Kiwi*: Negroni sour. Gin, Campari, vermú de la casa, syrup simple y limón</li></ul></div><div class=\"popup-direccion\">📍 Galvez 233, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/Q3JRq5EZ6rXEdUt46\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"barlemutt\" href=\"https://www.instagram.com/barlemutt\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.041085, "lon": -71.627657, "name": "Café Paraíso", "html": "<div class=\"popup-header\"><h3>Café Paraíso</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Pasaje Gálvez 173, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/Bi2P6ukefHHvVwLF7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"cafeparaiso3.0\" href=\"https://www.instagram.com/cafeparaiso3.0\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04357860271372, "lon": -71.62759594907078, "name": "Casa Alegre", "html": "<div class=\"popup-header\"><h3>Casa Alegre</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 249, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/pmygPygLnkbkX2D68\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"casalegrevalparaiso\" href=\"https://www.instagram.com/casalegrevalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.040678, "lon": -71.628231, "name": "Circular", "html": "<div class=\"popup-header\"><h3>Circular</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Yugoslavo 15, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/QD4jD6yEaqDq9VKv9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"circularvalparaiso\" href=\"https://www.instagram.com/circularvalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04360889204157, "lon": -71.62811651214766, "name": "Cocina Puerto", "html": "<div class=\"popup-header\"><h3>Cocina Puerto</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 455, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/UQUZM71h17bU2YqCA\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"cocinapuerto_valpo\" href=\"https://www.instagram.com/cocinapuerto_valpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042526, "lon": -71.628054, "name": "Corazón Continto", "html": "<div class=\"popup-header\"><h3>Corazón Continto</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Ostion yakitori, espuma de queso mantecoso, merkén y tierra de maní</li><li>Mini pincho de albacora</li><li>Tártaro de betarraga (veg)</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Pisco transparente, piña, sauvignon blanc, té negro con romero y syrup simple</li><li>Wine sour con syrup de jengibre</li><li>Copa de vino</li><li>Mocktail*: Shrub con fruta de estación y agua mineral</li></ul></div><div class=\"popup-direccion\">📍 Templeman 561, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/9wUN42o3xMv4B7nj7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"corazoncontinto.cl\" href=\"https://www.instagram.com/corazoncontinto.cl\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04229602421333, "lon": -71.62782327207962, "name": "Don César", "html": "<div class=\"popup-header\"><h3>Don César</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Trozos de lomo liso a la parrilla con berenjena en escabeche sobre pan tostado</li><li>Trozos de chorizo de cerdo con salsa de pimentón asado sobre pan tostado</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Copa de vino carmenere</li><li>Sangría</li><li>Jugo natural de frutas</li></ul></div><div class=\"popup-direccion\">📍 Templeman 484, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/cwzcp2aYna9qAuFR8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"parrilla.doncesar\" href=\"https://www.instagram.com/parrilla.doncesar\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0433768, "lon": -71.6281453, "name": "Espacio Raíz (Raíz Chilena)", "html": "<div class=\"popup-header\"><h3>Espacio Raíz (Raíz Chilena)</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Profiterol Raíz*: Profiterol salado relleno de pastelera de choclo y carne desmechada, acompañado de lactonesa de pebre</li><li>Tostada Marina*: Tostada de pan amasado con crema de parmesano y corvina ahumada, acompañada de emulsión de camarón y un toque de cilantro</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Chirimoya Alegre*: Cóctel de autor, frutal y refrescante a base de pisco, Chardonnay, naranja y chirimoya, con notas cítricas y espíritu de verano</li><li>Vino Navegado*: Clásico chileno cálido y aromático a base de vino tinto, naranja y especias, con notas cítricas y especiadas que evocan una de las preparaciones más tradicionales de nuestra cultura</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 438, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/QYHYPUFw4A6BsX7c9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"espacioraizvalpo\" href=\"https://www.instagram.com/espacioraizvalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04282778295973, "lon": -71.6295811873079, "name": "Fat Kid", "html": "<div class=\"popup-header\"><h3>Fat Kid</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Arancini Black Gold Baby*: Bola de risotto de champiñones apanada y frita, decorada con cebolla caramelizada y mayonesa trufada</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Despertar en Las Torpederas*: Vino Chardonnay, vodka de pera, syrup de canela y albúmina</li></ul></div><div class=\"popup-direccion\">📍 Lautaro Rosas 450, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/dyttRfHkYfBUhQPj8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"fatkidburgers\" href=\"https://www.instagram.com/fatkidburgers\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043770574925276, "lon": -71.62694097235091, "name": "Fauna", "html": "<div class=\"popup-header\"><h3>Fauna</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 166, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/D24qUKQB566eQn7G6\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"faunahotelrestaurante\" href=\"https://www.instagram.com/faunahotelrestaurante\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04348360856028, "lon": -71.62736358231606, "name": "Hotzenplotz Alegre", "html": "<div class=\"popup-header\"><h3>Hotzenplotz Alegre</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Mini choripán alemán</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Cerveza artesanal 300 cc</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 217, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/EnszhcNwMXky9zDC8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"hotzenplotz_alegre\" href=\"https://www.instagram.com/hotzenplotz_alegre\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04119789725527, "lon": -71.6271514980393, "name": "Il Paparazzo", "html": "<div class=\"popup-header\"><h3>Il Paparazzo</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Papudo 424</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/Kkye3zvaRHhsWdko7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"ilpaparazzovalparaiso\" href=\"https://www.instagram.com/ilpaparazzovalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04278, "lon": -71.627245, "name": "Jardín Cervecero", "html": "<div class=\"popup-header\"><h3>Jardín Cervecero</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Veggie*: berenjena furay, hummus, palta y berenjena encurtida</li><li>Mar*: tiradito pulpo, salsa ají amarillo, aceite de cilantro, papa camote hilo</li><li>Carne*: ají verde apanado, relleno pino y queso crema, serrano deshidratado, tomate cilantro</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Copa de vino blanco, tinto, Sour Club Social (pisco macerado en cacho e' cabra) y cerveza lager 330 ml</li></ul></div><div class=\"popup-direccion\">📍 Concepción 499, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/BxX2pAk2hftXNnbJ9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"jardincervecero_cl\" href=\"https://www.instagram.com/jardincervecero_cl\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.041899635336726, "lon": -71.62640244667071, "name": "Kapura", "html": "<div class=\"popup-header\"><h3>Kapura</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Tropical*: Base de patacón de plátano verde con ceviche de atún fresco, frutas de estación (mango, piña y pera), toque de aceite de sésamo, ciboulette y quinoa frita</li><li>Tartar de res*: Baguette tostado con tartar de res, alcaparras, pepinillo, cebolla, alioli de ajo y aceite de cacho de cabra y un toque de pepino encurtido de la casa</li><li>Vegana*: Base de babaganoush coronada con un arancini de arroz arborio, setas y gel de cebolla caramelizada</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Valpo mule con y sin alcohol</li><li>Sangría fresca o sangría caprina</li></ul></div><div class=\"popup-direccion\">📍 Papudo 557, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/NYGmJqQ2FXqsquMt9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"kapura_valparaiso\" href=\"https://www.instagram.com/kapura_valparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.040462, "lon": -71.628204, "name": "La Colombina", "html": "<div class=\"popup-header\"><h3>La Colombina</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Pasaje Apolo 91, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/LF8C7QUgbsnqnisv9\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"lacolombina_cerroalegre\" href=\"https://www.instagram.com/lacolombina_cerroalegre\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04296181966402, "lon": -71.62789567858829, "name": "La Conquistada", "html": "<div class=\"popup-header\"><h3>La Conquistada</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 382, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/1mh5JeCyrZtH5Xc8A\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"laconquistada_valparaiso\" href=\"https://www.instagram.com/laconquistada_valparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0437, "lon": -71.62881, "name": "Malizioso", "html": "<div class=\"popup-header\"><h3>Malizioso</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Bruschetta Harris*: Focaccia de la casa con arrollado artesanal Harris, pebre tradicional chileno y mousse de palta</li><li>Bruschetta Vegetariana*: Focaccia de la casa con hummus de betarraga, champiñones asados y fino chiffonade de piel de limón</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Pisco nacional transparente, licor de hibisco, infusión de rosa con frutos rojos y jugo de pomelo</li><li>Limonada de albahaca, jengibre, sirope de sauco y top de agua tónica</li></ul></div><div class=\"popup-direccion\">📍 Almirante Montt 532, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/ymVYmJC9Rm7z75ZM8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"malizioso.pizzeria\" href=\"https://www.instagram.com/malizioso.pizzeria\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042615949598584, "lon": -71.62690767065276, "name": "María María La Fábrica", "html": "<div class=\"popup-header\"><h3>María María La Fábrica</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Concepción 499, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/uccU1CZJHerbSJHT8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"mariamaria.lafabrica\" href=\"https://www.instagram.com/mariamaria.lafabrica\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042493, "lon": -71.626946, "name": "Media Luna", "html": "<div class=\"popup-header\"><h3>Media Luna</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Pilcomayo 581, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/LkDVdenbLhpPZtD77\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"medialunavalpo\" href=\"https://www.instagram.com/medialunavalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.043434131368315, "lon": -71.62791194800599, "name": "Momo", "html": "<div class=\"popup-header\"><h3>Momo</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Almirante Montt 427, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/b3KJb44r5MDYh7Sc8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"momovalparaiso\" href=\"https://www.instagram.com/momovalparaiso\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042675, "lon": -71.62645, "name": "Piano Café", "html": "<div class=\"popup-header\"><h3>Piano Café</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Abtao 668, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/tbitRs13Q3xRkUQe7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"piano.cafe.valpo\" href=\"https://www.instagram.com/piano.cafe.valpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042576, "lon": -71.626568, "name": "Planta Baja", "html": "<div class=\"popup-header\"><h3>Planta Baja</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Abtao 644, Cerro Concepción</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/qn6Lhbjbjjfj96xy5\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"plantabaja_valpo\" href=\"https://www.instagram.com/plantabaja_valpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.042082345729284, "lon": -71.62724141025826, "name": "Quinto Rumbo", "html": "<div class=\"popup-header\"><h3>Quinto Rumbo</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-section\"><div class=\"popup-label\">🍽️ Tapas</div><ul><li>Ssam de pollo frito, lechuga, hojas de cilantro, menta fresca y chimichurri, sweet chili de merkén y rabanitos encurtidos</li><li>Opción vegan con berenjena frita</li></ul></div><div class=\"popup-section\"><div class=\"popup-label\">🍷 Copas</div><ul><li>Shrub spritz*: Macerado fermentado de piña albahaca o de mango ají verde y espumante brut</li><li>Mocktail*: Macerado fermentado de piña albahaca o de mango ají verde y soda</li></ul></div><div class=\"popup-direccion\">📍 Pilcomayo 529</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/9o77QR4Pc13MjG4T7\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"quintorumbo.cocinaybar\" href=\"https://www.instagram.com/quintorumbo.cocinaybar\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0438392, "lon": -71.626887, "name": "Terapia", "html": "<div class=\"popup-header\"><h3>Terapia</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 135, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/7yK1hdABpLiAKpsZ8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"terapiavalpo\" href=\"https://www.instagram.com/terapiavalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.04348, "lon": -71.6276535, "name": "Terrat", "html": "<div class=\"popup-header\"><h3>Terrat</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Dimalow 263, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/DLkb6vWFbSx4Y2nV8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"terratvalpo\" href=\"https://www.instagram.com/terratvalpo\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}, {"lat": -33.0403736, "lon": -71.6290517, "name": "Terruá Bistró", "html": "<div class=\"popup-header\"><h3>Terruá Bistró</h3><button class=\"popup-close\" onclick=\"cerrarPopup()\" aria-label=\"Cerrar\">×</button></div><div class=\"popup-scroll\"><div class=\"popup-body\"><div class=\"popup-direccion\">📍 Paseo Yugoslavo 115, Cerro Alegre</div></div></div><div class=\"popup-actions\"><a class=\"popup-btn popup-btn-primary\" href=\"https://maps.app.goo.gl/YGLdv1CER2UYXK5H8\" target=\"_blank\" rel=\"noopener\">Cómo llegar</a><a class=\"popup-btn popup-btn-outline ig-link\" data-user=\"terruabistro\" href=\"https://www.instagram.com/terruabistro\" target=\"_blank\" rel=\"noopener\">Conoce más</a></div>"}];
 
   var map = new maplibregl.Map({
     container: 'mapa',
@@ -184,8 +179,6 @@
       return false;
     });
 
-    // Pintamos el fondo Y el agua de gris (tonos distintos para diferenciar),
-    // sin tocar el color de las calles
     capasFiltradas.forEach(function(capa) {
       if (capa.type === 'background') {
         capa.paint = capa.paint || {};
@@ -213,72 +206,53 @@
     document.getElementById('loader').style.display = 'none';
   }, 6000);
 
-  var svgPin = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 34" width="26" height="34">' +
+  // ===== Modal fijo en pantalla (independiente del mapa: no se arrastra, no se corta) =====
+  var modalBackdrop = document.getElementById('modal-backdrop');
+  var modalContent = document.getElementById('modal-content');
+
+  function abrirPopup(htmlContenido) {
+    modalContent.innerHTML = htmlContenido;
+    modalBackdrop.classList.add('activo');
+    var scrollDiv = modalContent.querySelector('.popup-scroll');
+    if (scrollDiv) scrollDiv.scrollTop = 0;
+  }
+
+  function cerrarPopup() {
+    modalBackdrop.classList.remove('activo');
+  }
+
+  // Cierra SOLO al hacer clic en el fondo oscuro (fuera de la tarjeta), nunca por mover el mapa
+  modalBackdrop.addEventListener('click', function(e) {
+    if (e.target === modalBackdrop) {
+      cerrarPopup();
+    }
+  });
+
+  var svgPin = '<svg class="marcador-pin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 34" width="26" height="34">' +
     '<path d="M13 0C5.8 0 0 5.8 0 13c0 9.7 13 21 13 21s13-11.3 13-21C26 5.8 20.2 0 13 0z" fill="#2a7a6b" stroke="#fff" stroke-width="2"/>' +
     '<circle cx="13" cy="13" r="5" fill="#fff"/>' +
     '</svg>';
 
-  var popupActual = null;
-  var moviendoPorCodigo = false;
-
-  function cerrarPopupActual() {
-    if (popupActual) {
-      popupActual.remove();
-      popupActual = null;
-    }
-  }
-
-  // Cerramos el popup ante CUALQUIER movimiento iniciado por el usuario
-  // (arrastrar, hacer zoom con los dedos, rueda del mouse, teclado, etc.)
-  // pero NO cuando el movimiento lo genera nuestro propio código (el centrado
-  // automático al abrir un pin), gracias a la bandera "moviendoPorCodigo".
-  map.on('movestart', function() {
-    if (!moviendoPorCodigo) {
-      cerrarPopupActual();
-    }
-  });
-
   locales.forEach(function(local) {
-    var el = document.createElement('div');
-    el.className = 'marcador-custom';
-    el.innerHTML = svgPin;
+    var wrap = document.createElement('div');
+    wrap.className = 'marcador-wrap';
 
-    var contenidoPopup = '<div class="popup-scroll">' + local.html + '</div>';
+    var etiqueta = document.createElement('div');
+    etiqueta.className = 'marcador-etiqueta';
+    etiqueta.textContent = local.name;
 
-    var popup = new maplibregl.Popup({ offset: 30, maxWidth: '300px', closeOnClick: true })
-      .setHTML(contenidoPopup);
+    wrap.innerHTML = '';
+    wrap.appendChild(etiqueta);
+    var pinContainer = document.createElement('div');
+    pinContainer.innerHTML = svgPin;
+    wrap.appendChild(pinContainer.firstChild);
 
-    popup.on('open', function() {
-      var scrollDiv = document.querySelector('.popup-scroll');
-      if (scrollDiv) scrollDiv.scrollTop = 0;
-      popupActual = popup;
-    });
-
-    popup.on('close', function() {
-      if (popupActual === popup) popupActual = null;
-    });
-
-    el.addEventListener('click', function(ev) {
+    wrap.addEventListener('click', function(ev) {
       ev.stopPropagation();
-      cerrarPopupActual();
-
-      moviendoPorCodigo = true;
-      map.flyTo({
-        center: [local.lon, local.lat],
-        zoom: Math.max(map.getZoom(), 17),
-        speed: 1.4,
-        curve: 1,
-        padding: { top: 260, bottom: 40, left: 20, right: 20 }
-      });
-      map.once('moveend', function() {
-        moviendoPorCodigo = false;
-      });
-
-      popup.setLngLat([local.lon, local.lat]);
-      popup.addTo(map);
+      abrirPopup(local.html);
     });
 
-    new maplibregl.Marker({ element: el, anchor: 'bottom' })
+    new maplibregl.Marker({ element: wrap, anchor: 'bottom' })
       .setLngLat([local.lon, local.lat])
       .addTo(map);
   });
@@ -289,7 +263,7 @@
     if (!link) return;
 
     var username = link.getAttribute('data-user');
-    if (!username) return; // sin username, dejamos que el link normal funcione
+    if (!username) return;
 
     e.preventDefault();
     var urlWeb = link.href;
@@ -298,8 +272,6 @@
 
     window.location = urlApp;
 
-    // Si después de un momento seguimos aquí (la app no se abrió, ej. en un
-    // computador o sin Instagram instalado), abrimos la versión web como respaldo
     setTimeout(function() {
       if (Date.now() - inicio < 2000) {
         window.open(urlWeb, '_blank');
