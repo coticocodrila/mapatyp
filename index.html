@@ -217,20 +217,27 @@
       .setHTML(contenidoPopup);
 
     // Cada vez que el popup se abre, forzamos el scroll interno a la parte superior
-    // (usamos el elemento propio de ESTE popup, no una búsqueda global, para que sea siempre preciso)
     popup.on('open', function() {
-      setTimeout(function() {
-        var elPopup = popup.getElement();
-        if (elPopup) {
-          var scrollDiv = elPopup.querySelector('.popup-scroll');
-          if (scrollDiv) scrollDiv.scrollTop = 0;
-        }
-      }, 0);
+      var scrollDiv = document.querySelector('.popup-scroll');
+      if (scrollDiv) scrollDiv.scrollTop = 0;
+    });
+
+    // Al hacer clic en un pin: centramos el mapa en ese local (para que el popup
+    // no quede cortado por los bordes de la pantalla) y luego mostramos el popup
+    el.addEventListener('click', function(ev) {
+      ev.stopPropagation();
+      map.flyTo({
+        center: [local.lon, local.lat],
+        zoom: Math.max(map.getZoom(), 17),
+        speed: 1.4,
+        curve: 1
+      });
+      popup.setLngLat([local.lon, local.lat]);
+      popup.addTo(map);
     });
 
     new maplibregl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat([local.lon, local.lat])
-      .setPopup(popup)
       .addTo(map);
   });
 </script>
