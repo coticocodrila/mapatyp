@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mapa Tapas y Copas v04</title>
+<title>Mapa Tapas y Copas - Cerro Alegre y Cerro Concepción</title>
 <link rel="preconnect" href="https://tiles.openfreemap.org">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
@@ -565,7 +565,7 @@
 (function() {
   // TODO: reemplaza esta URL por la de tu Google Apps Script Web App
   // (ver instrucciones de despliegue que te entrego aparte).
-  var URL_REGISTRO = 'https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec';
+  var URL_REGISTRO = 'https://script.google.com/macros/s/AKfycbyUHuJuYriWAsTf1e57pTw2lB-P7r-SHc8JERF-1KC0f2tlNuJhSMeuRuSohbrWlE4/exec';
 
   var btnAbrir = document.getElementById('btn-registro');
   var backdrop = document.getElementById('registro-backdrop');
@@ -611,7 +611,7 @@
       msg.classList.add('error');
       return;
     }
-    if (URL_REGISTRO.indexOf('https://script.google.com/macros/s/AKfycbyUHuJuYriWAsTf1e57pTw2lB-P7r-SHc8JERF-1KC0f2tlNuJhSMeuRuSohbrWlE4/exec') !== -1) {
+    if (URL_REGISTRO.indexOf('TU_ID_DE_DESPLIEGUE') !== -1) {
       msg.textContent = 'Falta configurar la URL de destino (ver instrucciones).';
       msg.classList.add('error');
       return;
