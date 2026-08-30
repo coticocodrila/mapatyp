@@ -1,3 +1,12 @@
+<!--
+  © 2026 coticocodrila. Todos los derechos reservados.
+  Mapa Tapas y Copas - Cerro Alegre y Cerro Concepción.
+
+  Este código y su contenido (textos, curaduría de locales, diseño e
+  información asociada) son propiedad de su autor. No está autorizada
+  su copia, redistribución ni reutilización total o parcial, comercial
+  o no comercial, sin permiso previo y por escrito del autor.
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -166,6 +175,88 @@
   .popup-btn:hover { opacity: 0.85; }
   .popup-btn-primary { background: #2a7a6b; color: #fff; }
   .popup-btn-outline { background: #fff; color: #2a7a6b; border: 1.5px solid #2a7a6b; }
+
+  /* ===== Botón flotante "Únete a la ruta" (registro de usuarios) ===== */
+  #btn-registro {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 9000;
+    background: #2a7a6b;
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  #btn-registro:hover { opacity: 0.92; }
+
+  /* ===== Modal de registro (independiente del modal de locales) ===== */
+  #registro-backdrop {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    background: rgba(0,0,0,0.25);
+  }
+  #registro-backdrop.activo { opacity: 1; pointer-events: all; }
+  #registro-card {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 340px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    transform: translateY(12px);
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  #registro-backdrop.activo #registro-card { transform: translateY(0); }
+  .registro-scroll { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+  .registro-body { padding: 18px 20px 20px 20px; }
+  .registro-body p.registro-intro {
+    font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 14px 0;
+  }
+  .registro-campo { margin-bottom: 12px; }
+  .registro-campo label {
+    display: block; font-size: 12px; font-weight: 700; color: #2a7a6b;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 5px;
+  }
+  .registro-campo input {
+    width: 100%; box-sizing: border-box; padding: 9px 10px; font-size: 14px;
+    border: 1.5px solid #ddd; border-radius: 8px; font-family: inherit;
+  }
+  .registro-campo input:focus { outline: none; border-color: #2a7a6b; }
+  .registro-consentimiento {
+    display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 4px 0;
+  }
+  .registro-consentimiento input { margin-top: 3px; flex-shrink: 0; }
+  .registro-consentimiento label { font-size: 12px; color: #555; line-height: 1.45; }
+  .registro-msg { font-size: 13px; margin-top: 10px; line-height: 1.4; }
+  .registro-msg.exito { color: #2a7a6b; font-weight: 600; }
+  .registro-msg.error { color: #b23b3b; font-weight: 600; }
+  #registro-submit {
+    width: 100%; margin-top: 14px; padding: 11px; border: none; border-radius: 8px;
+    background: #2a7a6b; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  #registro-submit:disabled { opacity: 0.6; cursor: default; }
+  #registro-submit:hover:not(:disabled) { opacity: 0.9; }
 </style>
 </head>
 <body>
@@ -179,6 +270,47 @@
 <div id="modal-backdrop">
   <div id="modal-card">
     <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ===== Botón y modal de registro de usuarios (nuevo, no toca el mapa) ===== -->
+<button id="btn-registro" type="button">📩 Únete a la ruta</button>
+
+<div id="registro-backdrop">
+  <div id="registro-card">
+    <div class="popup-header">
+      <h3>Únete a la ruta</h3>
+      <button class="popup-close" id="registro-cerrar" type="button">&times;</button>
+    </div>
+    <div class="registro-scroll">
+      <div class="registro-body">
+        <p class="registro-intro">Déjanos tus datos y recibe novedades, promociones y futuras rutas gastronómicas en Valparaíso.</p>
+        <form id="form-registro" novalidate>
+          <div class="registro-campo">
+            <label for="reg-nombre">Nombre</label>
+            <input type="text" id="reg-nombre" name="nombre" autocomplete="name" required>
+          </div>
+          <div class="registro-campo">
+            <label for="reg-email">Correo electrónico</label>
+            <input type="email" id="reg-email" name="email" autocomplete="email" required>
+          </div>
+          <div class="registro-campo">
+            <label for="reg-telefono">Teléfono</label>
+            <input type="tel" id="reg-telefono" name="telefono" autocomplete="tel" required>
+          </div>
+          <div class="registro-campo">
+            <label for="reg-ciudad">Ciudad de residencia</label>
+            <input type="text" id="reg-ciudad" name="ciudad" autocomplete="address-level2" required>
+          </div>
+          <div class="registro-consentimiento">
+            <input type="checkbox" id="reg-consentimiento" required>
+            <label for="reg-consentimiento">Acepto que mis datos sean almacenados para recibir comunicaciones sobre esta ruta gastronómica. Puedo solicitar su eliminación cuando quiera.</label>
+          </div>
+          <button id="registro-submit" type="submit">Enviar</button>
+          <div id="registro-msg" class="registro-msg"></div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -196,10 +328,25 @@
     style: 'https://tiles.openfreemap.org/styles/liberty',
     center: [-71.6278, -33.0426],
     zoom: zoomInicial,
-    attributionControl: true
+    attributionControl: true,
+    dragRotate: false,      // bloquea el giro con clic derecho / dos dedos + arrastre
+    pitchWithRotate: false, // evita que el gesto de inclinar también gire el mapa
+    touchPitch: false       // evita la inclinación 3D por gesto táctil
   });
 
+  // Refuerzo: bloquea también el giro con gesto táctil de pellizco-rotar
+  // (deja el zoom con pellizco intacto) y con teclado (Shift + flechas).
+  map.touchZoomRotate.disableRotation();
+  map.keyboard.disableRotation();
+
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+  // Botón para ubicar al usuario en el mapa
+  map.addControl(new maplibregl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true,
+    showUserHeading: true
+  }), 'top-right');
 
   function limpiarEstilo() {
     var estilo = map.getStyle();
@@ -379,6 +526,95 @@
       }
     }, 1200);
   });
+</script>
+
+<!-- ===== Script nuevo e independiente: registro de usuarios ===== -->
+<!-- No modifica ni depende del script del mapa de arriba. -->
+<script>
+(function() {
+  // TODO: reemplaza esta URL por la de tu Google Apps Script Web App
+  // (ver instrucciones de despliegue que te entrego aparte).
+  var URL_REGISTRO = 'https://script.google.com/macros/s/AKfycbyUHuJuYriWAsTf1e57pTw2lB-P7r-SHc8JERF-1KC0f2tlNuJhSMeuRuSohbrWlE4/exec';
+
+  var btnAbrir = document.getElementById('btn-registro');
+  var backdrop = document.getElementById('registro-backdrop');
+  var btnCerrar = document.getElementById('registro-cerrar');
+  var form = document.getElementById('form-registro');
+  var msg = document.getElementById('registro-msg');
+  var submitBtn = document.getElementById('registro-submit');
+
+  function abrirRegistro() {
+    backdrop.classList.add('activo');
+  }
+  function cerrarRegistro() {
+    backdrop.classList.remove('activo');
+  }
+
+  btnAbrir.addEventListener('click', abrirRegistro);
+  btnCerrar.addEventListener('click', cerrarRegistro);
+  backdrop.addEventListener('click', function(e) {
+    if (e.target === backdrop) cerrarRegistro();
+  });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    msg.textContent = '';
+    msg.className = 'registro-msg';
+
+    var datos = {
+      nombre: document.getElementById('reg-nombre').value.trim(),
+      email: document.getElementById('reg-email').value.trim(),
+      telefono: document.getElementById('reg-telefono').value.trim(),
+      ciudad: document.getElementById('reg-ciudad').value.trim(),
+      consentimiento: document.getElementById('reg-consentimiento').checked,
+      fecha: new Date().toISOString()
+    };
+
+    if (!datos.nombre || !datos.email || !datos.telefono || !datos.ciudad) {
+      msg.textContent = 'Por favor completa todos los campos.';
+      msg.classList.add('error');
+      return;
+    }
+    if (!datos.consentimiento) {
+      msg.textContent = 'Debes aceptar el uso de tus datos para continuar.';
+      msg.classList.add('error');
+      return;
+    }
+    if (URL_REGISTRO.indexOf('TU_ID_DE_DESPLIEGUE') !== -1) {
+      msg.textContent = 'Falta configurar la URL de destino (ver instrucciones).';
+      msg.classList.add('error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+
+    fetch(URL_REGISTRO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(datos)
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        if (res && res.status === 'ok') {
+          form.reset();
+          msg.textContent = '¡Gracias! Te avisaremos de novedades pronto.';
+          msg.classList.add('exito');
+          setTimeout(cerrarRegistro, 1800);
+        } else {
+          throw new Error('Respuesta inesperada');
+        }
+      })
+      .catch(function() {
+        msg.textContent = 'Hubo un problema al enviar tus datos. Intenta de nuevo.';
+        msg.classList.add('error');
+      })
+      .finally(function() {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar';
+      });
+  });
+})();
 </script>
 
 </body>
