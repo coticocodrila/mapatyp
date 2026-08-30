@@ -1,9 +1,18 @@
+<!--
+  © 2026 coticocodrila. Todos los derechos reservados.
+  Mapa Tapas y Copas - Cerro Alegre y Cerro Concepción.
+
+  Este código y su contenido (textos, curaduría de locales, diseño e
+  información asociada) son propiedad de su autor. No está autorizada
+  su copia, redistribución ni reutilización total o parcial, comercial
+  o no comercial, sin permiso previo y por escrito del autor.
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mapa Tapas y Copas - Cerro Alegre y Cerro Concepción</title>
+<title>Mapa Tapas y Copas v04</title>
 <link rel="preconnect" href="https://tiles.openfreemap.org">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
@@ -110,7 +119,7 @@
   }
 
   .popup-header {
-    background: #2a7a6b;
+    background: #d05985;
     padding: 16px 44px 16px 20px;
     position: relative;
     flex-shrink: 0;
@@ -146,7 +155,7 @@
   .popup-section { margin-bottom: 16px; }
   .popup-label {
     font-size: 12.5px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.04em; color: #2a7a6b; margin-bottom: 6px;
+    letter-spacing: 0.04em; color: #d05985; margin-bottom: 6px;
   }
   .popup-section ul { margin: 0; padding-left: 20px; list-style: disc; }
   .popup-section li { font-size: 14px; line-height: 1.5; color: #333; margin-bottom: 3px; word-wrap: break-word; }
@@ -164,8 +173,118 @@
     transition: opacity 0.15s ease;
   }
   .popup-btn:hover { opacity: 0.85; }
-  .popup-btn-primary { background: #2a7a6b; color: #fff; }
-  .popup-btn-outline { background: #fff; color: #2a7a6b; border: 1.5px solid #2a7a6b; }
+  .popup-btn-primary { background: #d05985; color: #fff; }
+  .popup-btn-outline { background: #fff; color: #d05985; border: 1.5px solid #d05985; }
+
+  /* ===== Contenedor de botones flotantes (agrupa "Sitio web" + "Únete a la ruta") ===== */
+  /* Wrapper nuevo, no modifica el estilo ni comportamiento ya aprobado del botón de registro;
+     solo lo agrupa junto al nuevo botón para poder ubicarlos lado a lado, centrados. */
+  #botones-flotantes {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ===== Botón flotante "Únete a la ruta" (registro de usuarios) ===== */
+  #btn-registro {
+    background: #d05985;
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  #btn-registro:hover { opacity: 0.92; }
+
+  /* ===== Botón flotante "Sitio web" (nuevo) ===== */
+  #btn-sitio {
+    background: #fff;
+    color: #d05985;
+    border: 1.5px solid #d05985;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  #btn-sitio:hover { opacity: 0.85; }
+
+  /* ===== Modal de registro (independiente del modal de locales) ===== */
+  #registro-backdrop {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    background: rgba(0,0,0,0.25);
+  }
+  #registro-backdrop.activo { opacity: 1; pointer-events: all; }
+  #registro-card {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 340px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    transform: translateY(12px);
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  #registro-backdrop.activo #registro-card { transform: translateY(0); }
+  .registro-scroll { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+  .registro-body { padding: 18px 20px 20px 20px; }
+  .registro-body p.registro-intro {
+    font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 14px 0;
+  }
+  .registro-campo { margin-bottom: 12px; }
+  .registro-campo label {
+    display: block; font-size: 12px; font-weight: 700; color: #d05985;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 5px;
+  }
+  .registro-campo input {
+    width: 100%; box-sizing: border-box; padding: 9px 10px; font-size: 14px;
+    border: 1.5px solid #ddd; border-radius: 8px; font-family: inherit;
+  }
+  .registro-campo input:focus { outline: none; border-color: #d05985; }
+  .registro-consentimiento {
+    display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 4px 0;
+  }
+  .registro-consentimiento input { margin-top: 3px; flex-shrink: 0; }
+  .registro-consentimiento label { font-size: 12px; color: #555; line-height: 1.45; }
+  .registro-msg { font-size: 13px; margin-top: 10px; line-height: 1.4; }
+  .registro-msg.exito { color: #d05985; font-weight: 600; }
+  .registro-msg.error { color: #b23b3b; font-weight: 600; }
+  #registro-submit {
+    width: 100%; margin-top: 14px; padding: 11px; border: none; border-radius: 8px;
+    background: #d05985; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  #registro-submit:disabled { opacity: 0.6; cursor: default; }
+  #registro-submit:hover:not(:disabled) { opacity: 0.9; }
 </style>
 </head>
 <body>
@@ -179,6 +298,50 @@
 <div id="modal-backdrop">
   <div id="modal-card">
     <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ===== Botones flotantes y modal de registro de usuarios (nuevo, no toca el mapa) ===== -->
+<div id="botones-flotantes">
+  <a id="btn-sitio" href="https://www.distritobac.cl" target="_blank" rel="noopener noreferrer">🌐 Sitio web</a>
+  <button id="btn-registro" type="button">📩 Únete a la ruta</button>
+</div>
+
+<div id="registro-backdrop">
+  <div id="registro-card">
+    <div class="popup-header">
+      <h3>Únete a la ruta</h3>
+      <button class="popup-close" id="registro-cerrar" type="button">&times;</button>
+    </div>
+    <div class="registro-scroll">
+      <div class="registro-body">
+        <p class="registro-intro">Déjanos tus datos y recibe novedades, promociones y futuras rutas gastronómicas en Valparaíso.</p>
+        <form id="form-registro" novalidate>
+          <div class="registro-campo">
+            <label for="reg-nombre">Nombre</label>
+            <input type="text" id="reg-nombre" name="nombre" autocomplete="name" required>
+          </div>
+          <div class="registro-campo">
+            <label for="reg-email">Correo electrónico</label>
+            <input type="email" id="reg-email" name="email" autocomplete="email" required>
+          </div>
+          <div class="registro-campo">
+            <label for="reg-telefono">Teléfono</label>
+            <input type="tel" id="reg-telefono" name="telefono" autocomplete="tel" required>
+          </div>
+          <div class="registro-campo">
+            <label for="reg-ciudad">Ciudad de residencia</label>
+            <input type="text" id="reg-ciudad" name="ciudad" autocomplete="address-level2" required>
+          </div>
+          <div class="registro-consentimiento">
+            <input type="checkbox" id="reg-consentimiento" required>
+            <label for="reg-consentimiento">Acepto que mis datos sean almacenados para recibir comunicaciones sobre esta ruta gastronómica. Puedo solicitar su eliminación cuando quiera.</label>
+          </div>
+          <button id="registro-submit" type="submit">Enviar</button>
+          <div id="registro-msg" class="registro-msg"></div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -196,10 +359,25 @@
     style: 'https://tiles.openfreemap.org/styles/liberty',
     center: [-71.6278, -33.0426],
     zoom: zoomInicial,
-    attributionControl: true
+    attributionControl: true,
+    dragRotate: false,      // bloquea el giro con clic derecho / dos dedos + arrastre
+    pitchWithRotate: false, // evita que el gesto de inclinar también gire el mapa
+    touchPitch: false       // evita la inclinación 3D por gesto táctil
   });
 
+  // Refuerzo: bloquea también el giro con gesto táctil de pellizco-rotar
+  // (deja el zoom con pellizco intacto) y con teclado (Shift + flechas).
+  map.touchZoomRotate.disableRotation();
+  map.keyboard.disableRotation();
+
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+  // Botón para ubicar al usuario en el mapa
+  map.addControl(new maplibregl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true,
+    showUserHeading: true
+  }), 'top-right');
 
   function limpiarEstilo() {
     var estilo = map.getStyle();
@@ -306,7 +484,7 @@
   });
 
   var svgPin = '<svg class="marcador-pin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 32" width="29" height="36">' +
-    '<path d="M6,2 H20 A4,4 0 0 1 24,6 V16 A4,4 0 0 1 20,20 H16 Q13,20 13,24 Q13,20 10,20 H6 A4,4 0 0 1 2,16 V6 A4,4 0 0 1 6,2 Z" fill="#2a7a6b"/>' +
+    '<path d="M6,2 H20 A4,4 0 0 1 24,6 V16 A4,4 0 0 1 20,20 H16 Q13,20 13,24 Q13,20 10,20 H6 A4,4 0 0 1 2,16 V6 A4,4 0 0 1 6,2 Z" fill="#7c294b"/>' +
     '</svg>';
 
   var LOGO_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAACXBIWXMAAAsSAAALEgHS3X78AAAE+klEQVR4nO2b7ZWbOBSGn9mz/8cdDKkgTgWhgzgVDK5gvBWMU8HOVBBSwXoqWFJBcAekA7sC7Q+hBWODkC4ynnP0nMMxxkIfL5Lu1RW+U0oR8eePuSvw3okCCokCCokCCokCCokCCokCCokCCokCCokCCokCCokCCokCCokCCokCCvlz7grcMEl9LIBlfS0HqnaisQKazNLO9aI+3jtpfSzR7fzYk+4AvJxcUUoNHZlS6qCGWVnyuNUjU0rtLG3rsu3mY+uBCXBvSZPX6Q6WdLfCFthgb9cobEYkHZHHPbpSt84SKIFnJhIPpjMiT8CO250Pl+i6uQp3RIteokdY3k1wp4Z35SrgYWRhexprJWWJtn7QGLCi/l6cpR5mgW6Hi3g/0cZiZ01pmWhd2Qgm9YVS6kXZjZZSevLP6nts+eYO9T8oR6Noa5ArB6XU0qUC9bFUSlUe5SmlRe/LNwld96EfU88GKaXFMD2pVBfMf+tYKH/xDHlP3i69Lx2oo5OAC6WHYilsVJe+SkxVTlcAlxHU9wCsR9sKL9D+0WQ+Uot9z/Ut/V6/KxtODUzmcK/dWPRgrPAG3ZiphTP85LJPeZiwzCON5QYt5ueR9975FmoEdClsDHsa/6moP7ssgV8TlgnwgWax7/LWlLeAZghXnAp4RPeOsT5glzH+4MKe5IxX9HD7t+f3BN2W1DHfBZ5LUbOUK4EfwBr9FBe4zSHXIudyb+7i+nAy55rUmB74MpgqDGOE6LJiuKcU9afrimiL7tmVa4XmDKj6DJnngd/efCuCNmQF+gE5Pdi5Q/q/J8xLOooe0EYtx6EHzx3SL/E3VG1emS4S9Fgf0ERjDIfW9xyoQi3lxnrymaAMQxkoXxsopWYfwjmyYfzGZZelEuTpxNwCgp64fVjTb5UL79o4cgsC+gRhv3EhOtxBYpVtHM3JkIBpwAq0yTzuKUakCenb/m9YQvXAMSuBpK6Izxr8ZUQZBTqIEZRQAtqGpXFYfUNZHxkXgtp45j+aOebAFfAP8jDWZ86nmRW6d2b19xJtbKamMifXdqSX2Cd/F9pB1KTO2zyYFC1kXv82tAx0pTIn1+6BL0wbtP2CbkzGqXigVxN5fb4lTE+8qoAZ0wZtDQ/A9568H2nemsiBT/RvL3gRSsD0wjWXCf038JWWvyWgXW6JnkbWyFZAwd2YLgnjLe5bnX6H/yqlzaWVSl6X8QntlI9xd/Y0QefCXAxlRBLL9yHaDS6Av4C/BXUZeghm38bQfpnSUDGwtr6WgKnDvStO9yiMW+LjM37DLUB6wHEdHWoIJ4J77zl3dQrPvHzvG00oAaVB0i9o65miRXjyzCcT1sNKSCPSnkt8NpCe0duXEtfnkcAbZiEFTFrnVcBybDwRsCdeswdOuYHkynemcYnOuJaAMP/rv1O9PXtCSAG78bo5Nu+DEzIi3Z38S64Q4OzhiOAVtiFCL+WSzvepA5x79NLqK8NBghQ/T8DKtQUs0asDKSbYYOKLO7RIl0RcE0g8CC9geuHaFr0o9+UVLVx3SB44F3HNtAHcM0JHpJOe6xnNSiPh/H8h3ZWMecViy7A1NyJmNC93BiW0gEM7ZxVhesf5PyoDMvRPpYzTHtR+saZLMVmN3hm2v3pFLNzCqx3vmiigkCigkCigkCigkCigkCigkCigkCigkCigkCigkCigkCigkCigkP8As0hfdP8r7/EAAAAASUVORK5CYII=';
@@ -379,6 +557,95 @@
       }
     }, 1200);
   });
+</script>
+
+<!-- ===== Script nuevo e independiente: registro de usuarios ===== -->
+<!-- No modifica ni depende del script del mapa de arriba. -->
+<script>
+(function() {
+  // TODO: reemplaza esta URL por la de tu Google Apps Script Web App
+  // (ver instrucciones de despliegue que te entrego aparte).
+  var URL_REGISTRO = 'https://script.google.com/macros/s/AKfycbyUHuJuYriWAsTf1e57pTw2lB-P7r-SHc8JERF-1KC0f2tlNuJhSMeuRuSohbrWlE4/exec';
+
+  var btnAbrir = document.getElementById('btn-registro');
+  var backdrop = document.getElementById('registro-backdrop');
+  var btnCerrar = document.getElementById('registro-cerrar');
+  var form = document.getElementById('form-registro');
+  var msg = document.getElementById('registro-msg');
+  var submitBtn = document.getElementById('registro-submit');
+
+  function abrirRegistro() {
+    backdrop.classList.add('activo');
+  }
+  function cerrarRegistro() {
+    backdrop.classList.remove('activo');
+  }
+
+  btnAbrir.addEventListener('click', abrirRegistro);
+  btnCerrar.addEventListener('click', cerrarRegistro);
+  backdrop.addEventListener('click', function(e) {
+    if (e.target === backdrop) cerrarRegistro();
+  });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    msg.textContent = '';
+    msg.className = 'registro-msg';
+
+    var datos = {
+      nombre: document.getElementById('reg-nombre').value.trim(),
+      email: document.getElementById('reg-email').value.trim(),
+      telefono: document.getElementById('reg-telefono').value.trim(),
+      ciudad: document.getElementById('reg-ciudad').value.trim(),
+      consentimiento: document.getElementById('reg-consentimiento').checked,
+      fecha: new Date().toISOString()
+    };
+
+    if (!datos.nombre || !datos.email || !datos.telefono || !datos.ciudad) {
+      msg.textContent = 'Por favor completa todos los campos.';
+      msg.classList.add('error');
+      return;
+    }
+    if (!datos.consentimiento) {
+      msg.textContent = 'Debes aceptar el uso de tus datos para continuar.';
+      msg.classList.add('error');
+      return;
+    }
+    if (URL_REGISTRO.indexOf('TU_ID_DE_DESPLIEGUE') !== -1) {
+      msg.textContent = 'Falta configurar la URL de destino (ver instrucciones).';
+      msg.classList.add('error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+
+    fetch(URL_REGISTRO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(datos)
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        if (res && res.status === 'ok') {
+          form.reset();
+          msg.textContent = '¡Gracias! Te avisaremos de novedades pronto.';
+          msg.classList.add('exito');
+          setTimeout(cerrarRegistro, 1800);
+        } else {
+          throw new Error('Respuesta inesperada');
+        }
+      })
+      .catch(function() {
+        msg.textContent = 'Hubo un problema al enviar tus datos. Intenta de nuevo.';
+        msg.classList.add('error');
+      })
+      .finally(function() {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar';
+      });
+  });
+})();
 </script>
 
 </body>
