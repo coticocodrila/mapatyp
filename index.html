@@ -221,35 +221,6 @@
   }
   #btn-registro:hover { opacity: 0.92; }
 
-  /* ===== Botones flotantes de filtro (abajo a la izquierda) ===== */
-  #filtros-flotantes {
-    position: fixed;
-    left: 16px;
-    bottom: 22px;
-    z-index: 9000;
-    display: flex;
-    gap: 10px;
-  }
-  .btn-filtro {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    border: 1.5px solid #d05985;
-    background: #fff;
-    font-size: 20px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s ease, transform 0.1s ease;
-  }
-  .btn-filtro:active { transform: scale(0.94); }
-  .btn-filtro.activo {
-    background: #d05985;
-    border-color: #d05985;
-  }
-
   /* ===== Botón flotante "Sitio web" (nuevo) ===== */
   #btn-sitio {
     background: #fff;
@@ -308,11 +279,13 @@
     display: block; font-size: 12px; font-weight: 700; color: #d05985;
     text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 5px;
   }
-  .registro-campo input {
+  .registro-campo input, .registro-campo select {
     width: 100%; box-sizing: border-box; padding: 9px 10px; font-size: 14px;
     border: 1.5px solid #ddd; border-radius: 8px; font-family: inherit;
+    background: #fff; color: #333;
   }
-  .registro-campo input:focus { outline: none; border-color: #d05985; }
+  .registro-campo input:focus, .registro-campo select:focus { outline: none; border-color: #d05985; }
+  .registro-campo input:invalid:not(:placeholder-shown) { border-color: #c0392b; }
   .registro-consentimiento {
     display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 4px 0;
   }
@@ -345,13 +318,8 @@
 
 <!-- ===== Botones flotantes y modal de registro de usuarios (nuevo, no toca el mapa) ===== -->
 <div id="botones-flotantes">
-  <a id="btn-sitio" href="https://www.distritobac.cl" target="_blank" rel="noopener noreferrer">🌐 Sitio web</a>
-</div>
-
-<!-- ===== Botones flotantes de filtro (nuevo, abajo a la izquierda) ===== -->
-<div id="filtros-flotantes">
-  <button id="btn-filtro-vegano" type="button" class="btn-filtro" title="Locales con opción vegana o vegetariana">🌱</button>
-  <button id="btn-filtro-mocktail" type="button" class="btn-filtro" title="Locales con mocktail o sin alcohol">🍹</button>
+  <a id="btn-sitio" href="https://www.distritobac.cl" target="_blank" rel="noopener noreferrer">🌐 Distrito BAC</a>
+  <button id="btn-registro" type="button">📩 Únete a la ruta</button>
 </div>
 
 <div id="registro-backdrop">
@@ -374,8 +342,26 @@
             <input type="email" id="reg-email" name="email" autocomplete="email" required>
           </div>
           <div class="registro-campo">
-            <label for="reg-ciudad">Ciudad de residencia</label>
-            <input type="text" id="reg-ciudad" name="ciudad" autocomplete="address-level2" required>
+            <label for="reg-region">Región en que vives</label>
+            <select id="reg-region" name="region" autocomplete="address-level1" required>
+              <option value="" disabled selected>Selecciona tu región</option>
+              <option>Arica y Parinacota</option>
+              <option>Tarapacá</option>
+              <option>Antofagasta</option>
+              <option>Atacama</option>
+              <option>Coquimbo</option>
+              <option>Valparaíso</option>
+              <option>Metropolitana de Santiago</option>
+              <option>Libertador General Bernardo O'Higgins</option>
+              <option>Maule</option>
+              <option>Ñuble</option>
+              <option>Biobío</option>
+              <option>La Araucanía</option>
+              <option>Los Ríos</option>
+              <option>Los Lagos</option>
+              <option>Aysén del General Carlos Ibáñez del Campo</option>
+              <option>Magallanes y de la Antártica Chilena</option>
+            </select>
           </div>
           <div class="registro-consentimiento">
             <input type="checkbox" id="reg-consentimiento" required>
@@ -588,41 +574,6 @@
       .addTo(map);
   });
 
-  // ===== Filtros: vegano/vegetariano (🌱) y mocktail/sin alcohol (🍹) =====
-  // Si no hay ningún filtro activo, se muestran todos los pines. Si hay uno o
-  // más activos, se muestra un local si cumple con AL MENOS uno de ellos.
-  var btnFiltroVegano = document.getElementById('btn-filtro-vegano');
-  var btnFiltroMocktail = document.getElementById('btn-filtro-mocktail');
-  var filtroVeganoActivo = false;
-  var filtroMocktailActivo = false;
-
-  function aplicarFiltros() {
-    var wraps = document.querySelectorAll('.marcador-wrap');
-    var algunFiltroActivo = filtroVeganoActivo || filtroMocktailActivo;
-
-    wraps.forEach(function(w) {
-      if (!algunFiltroActivo) {
-        w.style.display = '';
-        return;
-      }
-      var cumpleVegano = filtroVeganoActivo && w.dataset.vegano === '1';
-      var cumpleMocktail = filtroMocktailActivo && w.dataset.mocktail === '1';
-      w.style.display = (cumpleVegano || cumpleMocktail) ? '' : 'none';
-    });
-  }
-
-  btnFiltroVegano.addEventListener('click', function() {
-    filtroVeganoActivo = !filtroVeganoActivo;
-    btnFiltroVegano.classList.toggle('activo', filtroVeganoActivo);
-    aplicarFiltros();
-  });
-
-  btnFiltroMocktail.addEventListener('click', function() {
-    filtroMocktailActivo = !filtroMocktailActivo;
-    btnFiltroMocktail.classList.toggle('activo', filtroMocktailActivo);
-    aplicarFiltros();
-  });
-
   // ===== Intento de apertura en la app de Instagram (con respaldo automático a la web) =====
   document.addEventListener('click', function(e) {
     var link = e.target.closest ? e.target.closest('.ig-link') : null;
@@ -661,24 +612,17 @@
   var msg = document.getElementById('registro-msg');
   var submitBtn = document.getElementById('registro-submit');
 
-  var CLAVE_VISTO = 'registro_tapasycopas_vista';
-
   function abrirRegistro() {
     backdrop.classList.add('activo');
   }
   function cerrarRegistro() {
     backdrop.classList.remove('activo');
-    try { localStorage.setItem(CLAVE_VISTO, '1'); } catch (err) {}
   }
 
-  // Se muestra automáticamente al cargar la página (reemplaza al afiche de bienvenida
-  // anterior), solo si el visitante no lo ha cerrado antes
+  // Se muestra automáticamente cada vez que se carga la página (sin importar
+  // si el visitante ya se registró antes)
   window.addEventListener('load', function() {
-    var yaVisto = false;
-    try { yaVisto = localStorage.getItem(CLAVE_VISTO) === '1'; } catch (err) {}
-    if (!yaVisto) {
-      abrirRegistro();
-    }
+    abrirRegistro();
   });
 
   if (btnAbrir) btnAbrir.addEventListener('click', abrirRegistro);
@@ -695,13 +639,19 @@
     var datos = {
       nombre: document.getElementById('reg-nombre').value.trim(),
       email: document.getElementById('reg-email').value.trim(),
-      ciudad: document.getElementById('reg-ciudad').value.trim(),
+      region: document.getElementById('reg-region').value.trim(),
       consentimiento: document.getElementById('reg-consentimiento').checked,
       fecha: new Date().toISOString()
     };
 
-    if (!datos.nombre || !datos.email || !datos.ciudad) {
+    if (!datos.nombre || !datos.email || !datos.region) {
       msg.textContent = 'Por favor completa todos los campos.';
+      msg.classList.add('error');
+      return;
+    }
+    var EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!EMAIL_VALIDO.test(datos.email)) {
+      msg.textContent = 'Ingresa un correo electrónico válido.';
       msg.classList.add('error');
       return;
     }
