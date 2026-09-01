@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mapa Tapas y Copas - Cerro Alegre y Cerro Concepción</title>
+<title>Mapa Tapas y Copas v04</title>
 <link rel="preconnect" href="https://tiles.openfreemap.org">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
@@ -284,6 +284,16 @@
     border: 1.5px solid #ddd; border-radius: 8px; font-family: inherit;
     background: #fff; color: #333;
   }
+  .registro-fecha-grupo {
+    display: flex;
+    gap: 6px;
+  }
+  .registro-fecha-grupo select {
+    width: 100%; box-sizing: border-box; padding: 9px 6px; font-size: 13.5px;
+    border: 1.5px solid #ddd; border-radius: 8px; font-family: inherit;
+    background: #fff; color: #333;
+  }
+  .registro-fecha-grupo select:focus { outline: none; border-color: #d05985; }
   .registro-campo input:focus, .registro-campo select:focus { outline: none; border-color: #d05985; }
   .registro-campo input:invalid:not(:placeholder-shown) { border-color: #c0392b; }
   .registro-consentimiento {
@@ -327,7 +337,6 @@
     <div class="popup-header" id="registro-header">
       <img src="data:image/png;base64,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" alt="Distrito BAC" id="registro-logo">
       <h3>Únete a la ruta</h3>
-      <button class="popup-close" id="registro-cerrar" type="button">&times;</button>
     </div>
     <div class="registro-scroll">
       <div class="registro-body">
@@ -340,6 +349,32 @@
           <div class="registro-campo">
             <label for="reg-email">Correo electrónico</label>
             <input type="email" id="reg-email" name="email" autocomplete="email" required>
+          </div>
+          <div class="registro-campo">
+            <label>Fecha de nacimiento</label>
+            <div class="registro-fecha-grupo">
+              <select id="reg-dia" name="dia" required>
+                <option value="" disabled selected>Día</option>
+              </select>
+              <select id="reg-mes" name="mes" required>
+                <option value="" disabled selected>Mes</option>
+                <option value="01">Enero</option>
+                <option value="02">Febrero</option>
+                <option value="03">Marzo</option>
+                <option value="04">Abril</option>
+                <option value="05">Mayo</option>
+                <option value="06">Junio</option>
+                <option value="07">Julio</option>
+                <option value="08">Agosto</option>
+                <option value="09">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+              <select id="reg-anio" name="anio" required>
+                <option value="" disabled selected>Año</option>
+              </select>
+            </div>
           </div>
           <div class="registro-campo">
             <label for="reg-region">Región en que vives</label>
@@ -574,6 +609,71 @@
       .addTo(map);
   });
 
+  // ===== Puntos de transporte (van) e información (guía de la ruta) =====
+  var puntosTransporte = [
+    { lat: -33.037989, lon: -71.62793 },
+    { lat: -33.042618, lon: -71.626998 },
+    { lat: -33.040787, lon: -71.629485 }
+  ];
+  var textoTransporte = '🚐 Aprovecha y muévete en las van disponibles para la ruta.\n\n' +
+    '**Subida: $1.000**\n**Bajada: $1.000**\n\n' +
+    '📍 Descubre los otros puntos de recogida en este mapa';
+
+  var puntosInfo = [
+    { lat: -33.043125, lon: -71.629148 },
+    { lat: -33.041811, lon: -71.628853 },
+    { lat: -33.042499, lon: -71.627378 },
+    { lat: -33.042679, lon: -71.628435 },
+    { lat: -33.041161, lon: -71.629261 }
+  ];
+  var textoInfo = '💬 ¿Tienes alguna duda?\n\nUbica a nuestro guía para informaciones y ayuda sobre la ruta';
+
+  function textoAHtml(texto) {
+    return texto
+      .split('\n\n')
+      .map(function(parrafo) {
+        var conNegrita = parrafo.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        return '<p>' + conNegrita + '</p>';
+      })
+      .join('');
+  }
+
+  var svgPinTransporte = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 38" width="28" height="35">' +
+    '<path d="M15,2 A11,11 0 0 1 26,13 C26,20 15,32 15,32 C15,32 4,20 4,13 A11,11 0 0 1 15,2 Z" fill="#2a7a6b"/>' +
+    '<rect x="8.5" y="8.5" width="13" height="8.5" rx="2.3" fill="#fff"/>' +
+    '<circle cx="11.3" cy="17.3" r="1.7" fill="#2a7a6b"/>' +
+    '<circle cx="18.7" cy="17.3" r="1.7" fill="#2a7a6b"/>' +
+    '</svg>';
+
+  var svgPinInfo = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 38" width="28" height="35">' +
+    '<path d="M15,2 A11,11 0 0 1 26,13 C26,20 15,32 15,32 C15,32 4,20 4,13 A11,11 0 0 1 15,2 Z" fill="#2a7a6b"/>' +
+    '<text x="15" y="18.5" text-anchor="middle" font-size="14" font-weight="700" font-family="Georgia, serif" fill="#fff">i</text>' +
+    '</svg>';
+
+  function agregarPuntoUtilitario(punto, svg, tituloPopup, texto) {
+    var el = document.createElement('div');
+    el.innerHTML = svg;
+
+    var htmlPopup = '<div class="popup-header"><h3>' + tituloPopup + '</h3></div>' +
+      '<div class="popup-scroll"><div class="popup-body">' + textoAHtml(texto) + '</div></div>';
+
+    el.addEventListener('click', function(ev) {
+      ev.stopPropagation();
+      abrirPopup(htmlPopup);
+    });
+
+    new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([punto.lon, punto.lat])
+      .addTo(map);
+  }
+
+  puntosTransporte.forEach(function(p) {
+    agregarPuntoUtilitario(p, svgPinTransporte, '🚐 Punto de transporte', textoTransporte);
+  });
+  puntosInfo.forEach(function(p) {
+    agregarPuntoUtilitario(p, svgPinInfo, '💬 ¿Tienes alguna duda?', textoInfo);
+  });
+
   // ===== Intento de apertura en la app de Instagram (con respaldo automático a la web) =====
   document.addEventListener('click', function(e) {
     var link = e.target.closest ? e.target.closest('.ig-link') : null;
@@ -607,7 +707,6 @@
 
   var btnAbrir = document.getElementById('btn-registro'); // puede no existir; se usa solo si está presente
   var backdrop = document.getElementById('registro-backdrop');
-  var btnCerrar = document.getElementById('registro-cerrar');
   var form = document.getElementById('form-registro');
   var msg = document.getElementById('registro-msg');
   var submitBtn = document.getElementById('registro-submit');
@@ -619,6 +718,24 @@
     backdrop.classList.remove('activo');
   }
 
+  // Llenamos los selectores de día (1-31) y año (desde el año actual hacia
+  // 100 años atrás) para el campo de fecha de nacimiento
+  var selDia = document.getElementById('reg-dia');
+  for (var d = 1; d <= 31; d++) {
+    var opt = document.createElement('option');
+    opt.value = (d < 10 ? '0' : '') + d;
+    opt.textContent = d;
+    selDia.appendChild(opt);
+  }
+  var selAnio = document.getElementById('reg-anio');
+  var anioActual = new Date().getFullYear();
+  for (var a = anioActual; a >= anioActual - 100; a--) {
+    var optA = document.createElement('option');
+    optA.value = a;
+    optA.textContent = a;
+    selAnio.appendChild(optA);
+  }
+
   // Se muestra automáticamente cada vez que se carga la página (sin importar
   // si el visitante ya se registró antes)
   window.addEventListener('load', function() {
@@ -626,10 +743,9 @@
   });
 
   if (btnAbrir) btnAbrir.addEventListener('click', abrirRegistro);
-  btnCerrar.addEventListener('click', cerrarRegistro);
-  backdrop.addEventListener('click', function(e) {
-    if (e.target === backdrop) cerrarRegistro();
-  });
+  // El registro ahora es obligatorio: se quita la posibilidad de cerrar el
+  // modal con el botón "×" o haciendo clic fuera de él. Solo se cierra al
+  // completar el formulario con éxito (ver más abajo, dentro del .then()).
 
   form.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -639,12 +755,17 @@
     var datos = {
       nombre: document.getElementById('reg-nombre').value.trim(),
       email: document.getElementById('reg-email').value.trim(),
+      fechaNacimiento: document.getElementById('reg-dia').value + '/' + document.getElementById('reg-mes').value + '/' + document.getElementById('reg-anio').value,
       region: document.getElementById('reg-region').value.trim(),
       consentimiento: document.getElementById('reg-consentimiento').checked,
       fecha: new Date().toISOString()
     };
 
-    if (!datos.nombre || !datos.email || !datos.region) {
+    var diaVal = document.getElementById('reg-dia').value;
+    var mesVal = document.getElementById('reg-mes').value;
+    var anioVal = document.getElementById('reg-anio').value;
+
+    if (!datos.nombre || !datos.email || !datos.region || !diaVal || !mesVal || !anioVal) {
       msg.textContent = 'Por favor completa todos los campos.';
       msg.classList.add('error');
       return;
